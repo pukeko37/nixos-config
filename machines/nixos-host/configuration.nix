@@ -1,4 +1,3 @@
-
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
@@ -17,7 +16,7 @@
   boot.kernelModules = [ "kvm-intel" ];
   virtualisation.libvirtd.enable = true;
 
-  networking.hostName = "nixos-host"; # Define your hostname.
+  networking.hostName = "nixos-host";
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Set your time zone.
@@ -27,8 +26,10 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.enp1s0.useDHCP = false;
-  networking.interfaces.enp3s0.useDHCP = true;
+  networking.interfaces = {
+    enp1s0.useDHCP = false;
+    enp3s0.useDHCP = true;
+  };
 
   networking.bridges.br0.interfaces = [ "enp1s0" ];
   networking.interfaces.br0 = {
@@ -36,46 +37,16 @@
     ipv4.addresses = [{
        "address" = "192.168.1.5";
        "prefixLength" = 24;
+   # }
+   # {
+   #    "address" = "192.168.3.1";
+   #    "prefixLength" = 24;
     }];
   };
   networking = {
     defaultGateway = "192.168.1.1";
-    nameservers = [ "1.1.1.1" "8.8.8.8" ];
+    nameservers = [ "192.168.1.1" ];
   };
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  # };
-
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-
-  # Configure keymap in X11
-  # services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  # sound.enable = true;
-  # hardware.pulseaudio.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  # users.users.jane = {
-  #   isNormalUser = true;
-  #   extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-  # };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -109,8 +80,10 @@
 
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 
-    5800
-    5900
+    5800 # vnc
+    5900 # also vnc
+    9000 # minio
+    9001 # minio web interface
   ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
@@ -125,5 +98,16 @@
   system.stateVersion = "21.11"; # Did you read the comment?
   system.autoUpgrade.enable = true;
   system.autoUpgrade.allowReboot = false;
+
+  containers.minio = {
+    config = { config, pkgs, ... }: {
+      services.minio.enable = true;
+      services.minio.listenAddress = "192.168.1.5:9000";
+    };
+    autoStart = true;
+#    privateNetwork = true;
+#    hostAddress = "192.168.3.1";
+#    localAddress = "192.168.3.10";
+  };
 }
 
