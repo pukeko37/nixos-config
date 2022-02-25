@@ -37,10 +37,6 @@
     ipv4.addresses = [{
        "address" = "192.168.1.5";
        "prefixLength" = 24;
-   # }
-   # {
-   #    "address" = "192.168.3.1";
-   #    "prefixLength" = 24;
     }];
   };
   networking = {
@@ -104,10 +100,20 @@
       services.minio.enable = true;
       services.minio.listenAddress = "192.168.1.5:9000";
     };
+    bindMounts = {
+    "/var/lib/minio/data/" = { hostPath = "/var/data/minio";
+              isReadOnly = false; }; 
+    };
     autoStart = true;
 #    privateNetwork = true;
 #    hostAddress = "192.168.3.1";
 #    localAddress = "192.168.3.10";
+  };
+
+  fileSystems."/var/data" = {
+    device = "/dev/disk/by-uuid/ab7c8d3d-ccba-4bf1-a7fe-b4c818db5d13";
+    fsType = "ext4";
+    options = [ "nofail" ];
   };
 }
 
