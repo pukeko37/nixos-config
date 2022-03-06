@@ -21,6 +21,7 @@
 
   # Set your time zone.
   time.timeZone = "Pacific/Auckland";
+  services.timesyncd.servers = [ "192.168.2.1" ];
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
@@ -115,5 +116,25 @@
     fsType = "ext4";
     options = [ "nofail" ];
   };
+
+  virtualisation.oci-containers.backend = "podman";
+  virtualisation.oci-containers.containers = {
+    pihole = {
+      image = "pihole/pihole:latest";
+      ports = [
+        "192.168.1.5:53:53/tcp"
+        "192.168.1.5:53:53/udp"
+        "192.168.1.5:80:80/tcp"
+      ];
+      volumes = [
+        "/var/lib/pihole/etc-pihole/:/etc/pihole/"
+        "/var/lib/pihole/etc-dnsmasq/:/etc/dnsmasq.d/"
+      ];
+      environment = { WEBPASSWORD = "gingerthedog";
+        CACHE_SIZE="0"; };
+      extraOptions = [ "--memory=128m" ];
+    };
+  };
+
 }
 
